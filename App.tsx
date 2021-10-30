@@ -39,7 +39,6 @@ export default function App() {
               console.log("success");
             }
           } catch (e) {
-            console.log({ e });
           }
         }} />
         <Button title="Search online" onPress={async () => {
