@@ -1,63 +1,71 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View, Image, TextInput, Button, Alert, ToastAndroid, } from 'react-native';
+import * as Battery from 'expo-battery';
 import * as IntentLauncher from 'expo-intent-launcher';
-function validURL(str: string) {
-  const pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-  return !!pattern.test(str);
+import { useEffectAsync } from './hooks/useEffectAsync';
+import { Icon } from 'react-native-elements'
+const batteryLevelMap = {
+  "0.25": "battery-quarter",
+  "0.50": "battery-half",
+  "0.75": "battery-three-quarters",
+  "1": "battery-full"
 }
 export default function App() {
-  const [userString, setUserString] = useState("")
+  const [batteryLevel, setBatteryLevel] = useState<number>(0);
+
+  const [batteryState, setBatteryState] = useState<Battery.BatteryState>(null!);
+  const batteryIcon = useMemo(() => {
+    if (batteryLevel >= 0 && batteryLevel < 0.25) {
+      return "battery-1"
+    } else if (batteryLevel >= 0.25 && batteryLevel < 0.5) {
+      return "battery-2"
+    } else if (batteryLevel >= 0.5 && batteryLevel < 0.75) {
+      return "battery-3";
+    } else if (batteryLevel >= 0.75) {
+      return "battery-4"
+    }
+    return "battery-full";
+  }, [batteryLevel])
+  useEffectAsync(async () => {
+    const batteryLevel = await Battery.getBatteryLevelAsync();
+    const batteryState = await Battery.getBatteryStateAsync();
+    setBatteryState(batteryState);
+    setBatteryLevel(batteryLevel);
+    const batteryStateSubscription = Battery.addBatteryStateListener(({ batteryState }) => {
+      setBatteryState(batteryState)
+
+    })
+    const batteryLevelSubscription = Battery.addBatteryLevelListener(({ batteryLevel }) => {
+      setBatteryLevel(batteryLevel);
+
+    })
+    return () => {
+      batteryStateSubscription && batteryStateSubscription.remove();
+      batteryLevelSubscription && batteryLevelSubscription.remove();
+    }
+  }, [])
   return (
     <View style={styles.container}>
-      <Button title="Populate input" onPress={() => {
-        setUserString("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-      }} />
-      <TextInput
-        value={userString}
-        placeholder="Enter your name"
-        onChangeText={setUserString}
-        style={styles.textInput}
-      />
-      <View style={styles.buttonGroup}>
-        <Button title="Share" onPress={async () => {
-          try {
-            const result = await IntentLauncher.startActivityAsync("android.intent.action.SEND", {
-              extra: {
-                "android.intent.extra.TEXT": userString,
-              },
-              type: "text/plain",
-            })
 
-            if (result.resultCode === IntentLauncher.ResultCode.Success) {
-              ToastAndroid.show("Success", 30);
-              console.log("success");
-            }
-          } catch (e) {
-            console.log({ e });
-          }
-        }} />
-        <Button title="Search online" onPress={async () => {
-          try {
-            if (!validURL(userString)) {
-              ToastAndroid.showWithGravity("Invalid URL", 30, ToastAndroid.BOTTOM);
-              throw {};
-            }
-            const result = await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
-              data: userString
-            })
-            if (result.resultCode === IntentLauncher.ResultCode.Success) {
-              console.log("success");
-            }
-          } catch (e) {
-            console.log({ e });
-          }
-        }} />
+      <View style={styles.buttonGroup}>
+        <Text>
+          Battery level:
+          {batteryLevel}
+        </Text>
+        <Text>
+          Battery State:
+          {batteryState}
+        </Text>
+      </View>
+      <Icon type='font-awesome' tvParallaxProperties name={batteryIcon} color='#00aced' />
+      <View>
+        <Text>
+          {batteryState === Battery.BatteryState.CHARGING && "Charging"}
+          {batteryState === Battery.BatteryState.FULL && "Full"}
+          {batteryState === Battery.BatteryState.UNPLUGGED && "Unplugged"}
+          {batteryState === Battery.BatteryState.UNKNOWN && "Unknown"}
+        </Text>
       </View>
       <StatusBar style="auto" />
     </View>
@@ -77,10 +85,10 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: "column",
+    // justifyContent: "space-around",
     width: "100%",
-    // alignItems: "center"
+    alignItems: "center"
   },
   textInput: {
     height: 40,
