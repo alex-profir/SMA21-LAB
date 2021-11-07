@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View, Image, TextInput, Button, Alert, ToastAndroid, } from 'react-native';
 import * as Battery from 'expo-battery';
 import * as IntentLauncher from 'expo-intent-launcher';
-import { useEffectAsync } from './hooks/useEffectAsync';
+import { useEffectAsync } from './src/hooks/useEffectAsync';
 import { Icon } from 'react-native-elements'
 const batteryLevelMap = {
   "0.25": "battery-quarter",
