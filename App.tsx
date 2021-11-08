@@ -4,71 +4,34 @@ import { StyleSheet, Text, View, Image, TextInput, Button, Alert, ToastAndroid, 
 import * as Battery from 'expo-battery';
 import * as IntentLauncher from 'expo-intent-launcher';
 import { useEffectAsync } from './src/hooks/useEffectAsync';
-import { Icon } from 'react-native-elements'
-const batteryLevelMap = {
-  "0.25": "battery-quarter",
-  "0.50": "battery-half",
-  "0.75": "battery-three-quarters",
-  "1": "battery-full"
+import { Icon, Header, Input } from 'react-native-elements'
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
+import 'firebase/database'
+import { px } from './src/styles';
+import { Wallet } from './src/pages/Wallet';
+
+
+if (firebase.apps.length === 0) {
+  firebase.initializeApp(firebaseConfig);
 }
+
 export default function App() {
-  const [batteryLevel, setBatteryLevel] = useState<number>(0);
-
-  const [batteryState, setBatteryState] = useState<Battery.BatteryState>(null!);
-  const batteryIcon = useMemo(() => {
-    if (batteryLevel >= 0 && batteryLevel < 0.25) {
-      return "battery-1"
-    } else if (batteryLevel >= 0.25 && batteryLevel < 0.5) {
-      return "battery-2"
-    } else if (batteryLevel >= 0.5 && batteryLevel < 0.75) {
-      return "battery-3";
-    } else if (batteryLevel >= 0.75) {
-      return "battery-4"
-    }
-    return "battery-full";
-  }, [batteryLevel])
-  useEffectAsync(async () => {
-    const batteryLevel = await Battery.getBatteryLevelAsync();
-    const batteryState = await Battery.getBatteryStateAsync();
-    setBatteryState(batteryState);
-    setBatteryLevel(batteryLevel);
-    const batteryStateSubscription = Battery.addBatteryStateListener(({ batteryState }) => {
-      setBatteryState(batteryState)
-
-    })
-    const batteryLevelSubscription = Battery.addBatteryLevelListener(({ batteryLevel }) => {
-      setBatteryLevel(batteryLevel);
-
-    })
-    return () => {
-      batteryStateSubscription && batteryStateSubscription.remove();
-      batteryLevelSubscription && batteryLevelSubscription.remove();
-    }
-  }, [])
   return (
-    <View style={styles.container}>
-
-      <View style={styles.buttonGroup}>
-        <Text>
-          Battery level:
-          {batteryLevel}
-        </Text>
-        <Text>
-          Battery State:
-          {batteryState}
-        </Text>
-      </View>
-      <Icon type='font-awesome' tvParallaxProperties name={batteryIcon} color='#00aced' />
-      <View>
-        <Text>
-          {batteryState === Battery.BatteryState.CHARGING && "Charging"}
-          {batteryState === Battery.BatteryState.FULL && "Full"}
-          {batteryState === Battery.BatteryState.UNPLUGGED && "Unplugged"}
-          {batteryState === Battery.BatteryState.UNKNOWN && "Unknown"}
-        </Text>
+    <SafeAreaProvider>
+      <View style={{
+        height: "100%",
+      }}>
+        <Header
+          centerComponent={{ text: 'Smart Wallet', style: { color: '#fff', fontWeight: "bold", fontSize: px(24), } }}
+        />
+        <View style={styles.container}>
+          <Wallet />
+        </View>
       </View>
       <StatusBar style="auto" />
-    </View>
+    </SafeAreaProvider>
   );
 }
 
@@ -76,9 +39,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-
+    // alignItems: 'center',
+    // justifyContent: 'center',
+    // height: 100,
   },
   btn: {
     margin: 2
