@@ -7,11 +7,11 @@ import { useEffectAsync } from './src/hooks/useEffectAsync';
 import { Icon, Header, Input } from 'react-native-elements'
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import firebase from 'firebase/app';
+
 import 'firebase/firestore';
 import 'firebase/database'
 import { px } from './src/styles';
 import { Wallet } from './src/pages/Wallet';
-
 
 if (firebase.apps.length === 0) {
   firebase.initializeApp(firebaseConfig);

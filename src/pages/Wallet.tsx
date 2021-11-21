@@ -1,10 +1,13 @@
 import React, { useState, useMemo } from "react";
-import { StyleSheet, View, Image, TextInput, Alert, ToastAndroid, ScrollView, } from 'react-native';
+import { StyleSheet, View, Image, TextInput, Alert, ActivityIndicator, ScrollView, } from 'react-native';
 import { useEffectAsync } from '../hooks/useEffectAsync';
 import firebase from 'firebase/app';
-import { Input, Text, Button, ListItem } from "react-native-elements";
+import { Input, Text, Button, ListItem, useTheme } from "react-native-elements";
 import { px } from "../styles";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearProgress } from 'react-native-elements';
+
+
 const InputGroup = (p: {
     headerText: string;
     value: string;
@@ -33,8 +36,10 @@ const InputGroup = (p: {
     </View>
 }
 const toUpperCase = (word: string) => `${word[0].toUpperCase()}${word.slice(1)}`
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const Wallet = () => {
     const db = firebase.database();
+    const theme = useTheme();
     const [selectedMonth, setSelectedMonth] = useState("");
     const [changeValues, setChangeValues] = useState<{
         income: string;
@@ -80,6 +85,9 @@ export const Wallet = () => {
         })
     }, [selectedMonth, calendar]);
     const [monts, setMonts] = useState<string[]>([]);
+    const loading = useMemo(() => {
+        return monts.length === 0 || Object.keys(calendar).length === 0;
+    }, [monts, calendar]);
     function setValues() {
         const ref = db.ref("calendar")
         ref.set({
@@ -142,8 +150,9 @@ export const Wallet = () => {
     }
     useEffectAsync(async () => {
         const ref = db.ref("calendar");
-        ref.on("value", (val) => {
+        ref.on("value", async (val) => {
             const value = val.val()
+            await sleep(250);
             setMonts(Object.keys(value));
             setCalendar(value);
             console.log({ val });
@@ -184,8 +193,6 @@ export const Wallet = () => {
             /> */}
         </View>
         <Button disabled={disabledButton} title="Update" onPress={() => {
-            console.log("UDPATE!!");
-            // setValues();
             updateValues();
         }} />
         <ScrollView style={{
