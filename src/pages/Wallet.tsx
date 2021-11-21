@@ -192,6 +192,9 @@ export const Wallet = () => {
                 value="1200"
             /> */}
         </View>
+        {loading && <View>
+            <ActivityIndicator size="large" color={theme.theme.colors?.primary} />
+        </View>}
         <Button disabled={disabledButton} title="Update" onPress={() => {
             updateValues();
         }} />
