@@ -6,6 +6,7 @@ import { Input, Text, Button, ListItem, useTheme } from "react-native-elements";
 import { px } from "../styles";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearProgress } from 'react-native-elements';
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 
 
 const InputGroup = (p: {
@@ -40,6 +41,9 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const Wallet = () => {
     const db = firebase.database();
     const theme = useTheme();
+    const nav = useNavigation<NavigationProp<ReactNavigation.RootParamList & {
+        Expenses: any;
+    }>>()
     const [selectedMonth, setSelectedMonth] = useState("");
     const [changeValues, setChangeValues] = useState<{
         income: string;
@@ -183,14 +187,6 @@ export const Wallet = () => {
                     }))
                 }}
             />
-            {/* <Input
-                disabled
-                value="500"
-            />
-            <Input
-                disabled
-                value="1200"
-            /> */}
         </View>
         {loading && <View>
             <ActivityIndicator size="large" color={theme.theme.colors?.primary} />
@@ -212,7 +208,6 @@ export const Wallet = () => {
                 </ListItem>
             })}
         </ScrollView>
-
     </View>
 }
 
