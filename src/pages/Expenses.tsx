@@ -1,8 +1,10 @@
 import { useNavigation } from "@react-navigation/native";
 import firebase from "firebase";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useContext } from "react";
 import { StyleSheet, Text, View, Image, TextInput, Button, Alert, ToastAndroid, ScrollView, } from 'react-native';
+import { firebaseDBContext } from "../hooks/FirebaseContextProvider";
 import { useEffectAsync } from "../hooks/useEffectAsync";
+import { useOfflinePersistance } from "../hooks/useOfflincePersistance";
 import { px } from "../styles";
 type PaymentInfoContainerProps = {
     title: string
@@ -72,7 +74,7 @@ export const Expenses = (p: {
 }) => {
 
     const nav = useNavigation();
-    const db = firebase.database();
+    const db = useContext(firebaseDBContext);
     const [data, setData] = useState<any[]>([]);
     useEffectAsync(async () => {
         const ref = db.ref("history");

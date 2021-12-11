@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useContext } from "react";
 import { StyleSheet, View, Image, TextInput, Alert, ActivityIndicator, ScrollView, } from 'react-native';
 import { useEffectAsync } from '../hooks/useEffectAsync';
 import firebase from 'firebase/app';
@@ -7,6 +7,8 @@ import { px } from "../styles";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearProgress } from 'react-native-elements';
 import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { useOfflinePersistance } from "../hooks/useOfflincePersistance";
+import { firebaseDBContext } from "../hooks/FirebaseContextProvider";
 
 
 const InputGroup = (p: {
@@ -39,7 +41,7 @@ const InputGroup = (p: {
 const toUpperCase = (word: string) => `${word[0].toUpperCase()}${word.slice(1)}`
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const Wallet = () => {
-    const db = firebase.database();
+    const db = useContext(firebaseDBContext);
     const theme = useTheme();
     const nav = useNavigation<NavigationProp<ReactNavigation.RootParamList & {
         Expenses: any;
@@ -159,7 +161,6 @@ export const Wallet = () => {
             await sleep(250);
             setMonts(Object.keys(value));
             setCalendar(value);
-            console.log({ val });
         });
     }, [])
     return <View style={{
@@ -198,7 +199,7 @@ export const Wallet = () => {
         }}>
             {monts.map(month => {
                 return <ListItem key={month} bottomDivider onPress={() => {
-                    console.log(month);
+                    // console.log(month);
                     setSelectedMonth(month);
                 }}>
                     <ListItem.Content>

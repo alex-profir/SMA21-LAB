@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import firebase from "firebase";
 import { Text, View } from "react-native"
@@ -6,10 +6,12 @@ import { Button, Input } from "react-native-elements";
 import { px } from "../styles";
 import { Picker } from "@react-native-picker/picker";
 import { useEffectAsync } from "../hooks/useEffectAsync";
+import { useOfflinePersistance } from "../hooks/useOfflincePersistance";
+import { firebaseDBContext } from "../hooks/FirebaseContextProvider";
 
 export const AddExpense = () => {
     const nav = useNavigation()
-    const db = firebase.database();
+    const db = useContext(firebaseDBContext);
     const [categories, setCategories] = useState([]);
     const [info, setInfo] = useState({
         description: "",
@@ -18,15 +20,8 @@ export const AddExpense = () => {
         date: new Date().toISOString(),
     });
     useEffectAsync(() => {
-        const ref = db.ref("history");
-        ref.on("value", async (val) => {
-            const value = val.val()
-            console.log({ value });
-            // setCategories(value);
-        });
-    });
-    useEffectAsync(() => {
         const ref = db.ref("categories");
+        
         ref.on("value", async (val) => {
             const value = val.val()
             setCategories(value);
@@ -116,7 +111,7 @@ export const AddExpense = () => {
                     margin: px(10),
                 }}>
                     <Button title="Save" onPress={() => {
-                        console.log({ info });
+                        // console.log({ info });
                         updateValues();
                     }} />
                 </View>
