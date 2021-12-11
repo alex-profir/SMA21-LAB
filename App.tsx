@@ -16,23 +16,28 @@ import { px } from './src/styles';
 import { Wallet } from './src/pages/Wallet';
 import { Expenses } from './src/pages/Expenses';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { AddExpense } from './src/pages/AddExpense';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDfC6OMVmK_mmaY5quhrm6EuuOAGDwULvc",
-  authDomain: "sma-lab-28d1b.firebaseapp.com",
-  databaseURL: "https://sma-lab-28d1b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "sma-lab-28d1b",
-  storageBucket: "sma-lab-28d1b.appspot.com",
-  messagingSenderId: "316558270653",
-  appId: "1:316558270653:web:d9a2eda31f2bd3eb6f57d4",
-  measurementId: "G-4Z7JM6QZDQ"
-};
+
 if (firebase.apps.length === 0) {
   firebase.initializeApp(firebaseConfig);
 }
 
 const Stack = createNativeStackNavigator();
 
+const ExpensesScreens = () => {
+  return <Stack.Navigator screenOptions={{
+    headerShown: true,
+    headerBackVisible: true,
+  }}>
+    <Stack.Screen name='expenses2' options={{
+      headerTitle: "Expenses"
+    }} component={Expenses} />
+    <Stack.Screen name='expenses1' options={{
+      headerTitle: "Add expense"
+    }} component={AddExpense} />
+  </Stack.Navigator>
+}
 
 const Tab = createBottomTabNavigator();
 export default function App() {
@@ -57,11 +62,14 @@ export default function App() {
           </Stack.Navigator> */}
           <Tab.Navigator screenOptions={{
             // tabBarIcon
+            // headerShown: false,
           }}>
-            <Tab.Screen name="Wallet"  component={Wallet} options={{
+            <Tab.Screen name="Wallet" component={Wallet} options={{
               // icon
             }} />
-            <Tab.Screen name="Expenses" component={Expenses} />
+            <Tab.Screen name="Expenses" options={{
+              headerShown: false,
+            }} component={ExpensesScreens} />
           </Tab.Navigator>
         </NavigationContainer>
       </View>

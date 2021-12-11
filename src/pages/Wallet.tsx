@@ -161,7 +161,6 @@ export const Wallet = () => {
             setCalendar(value);
             console.log({ val });
         });
-        ref.set
     }, [])
     return <View style={{
         padding: px(10)
