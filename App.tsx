@@ -1,13 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, Image, TextInput, Button, Alert, ToastAndroid, } from 'react-native';
+import { StyleSheet, Text, View, Image, TextInput, Alert, ToastAndroid, } from 'react-native';
 import * as Battery from 'expo-battery';
 import * as IntentLauncher from 'expo-intent-launcher';
 import { useEffectAsync } from './src/hooks/useEffectAsync';
-import { Icon, Header, Input } from 'react-native-elements'
+import { Icon, Header, Input, Button } from 'react-native-elements'
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import firebase from 'firebase/app';
-import { NavigationContainer } from '@react-navigation/native';
+import { createNavigationContainerRef, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import 'firebase/firestore';
@@ -19,6 +19,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AddExpense } from './src/pages/AddExpense';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { FirebaseContextProvider } from './src/hooks/FirebaseContextProvider';
+import Login from './src/pages/Login';
+import { FirebaseAuthProvider } from './src/hooks/FireBaseAuthProvider';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDfC6OMVmK_mmaY5quhrm6EuuOAGDwULvc",
@@ -50,46 +52,62 @@ const ExpensesScreens = () => {
   </Stack.Navigator>
 }
 
+const Logout = () => {
+  return <View>
+    <Button title="Logout" onPress={() => {
+      console.log("logout");
+      firebase.auth().signOut();
+    }}>
+    </Button>
+  </View>
+}
 const Tab = createBottomTabNavigator();
+const DashboardScreens = () => <Tab.Navigator screenOptions={{
+  headerRight: Logout
+}}>
+  <Tab.Screen name="Wallet" component={Wallet} options={{
+    // icon
+  }} />
+  <Tab.Screen name="Expenses" options={{
+    headerShown: false,
+  }} component={ExpensesScreens} />
+</Tab.Navigator>
+
+
+export const navigationRef = createNavigationContainerRef<any>()
+export function navigate(name: string, params?: any) {
+  if (navigationRef.isReady()) {
+    navigationRef.navigate(name, params);
+  }
+}
 export default function App() {
 
 
   return (
     <SafeAreaProvider>
       <FirebaseContextProvider>
+
         <View style={{
           height: "100%",
         }}>
-          {/* <Header
-          centerComponent={{ text: 'Smart Wallet', style: { color: '#fff', fontWeight: "bold", fontSize: px(24), } }}
-        /> */}
-          {/* <View style={styles.container}>
-        </View> */}
-          <NavigationContainer>
-            {/* <Stack.Navigator>
-            <Stack.Screen name="Home" options={{
-              header: () => <Header
-                centerComponent={{ text: 'Smart Wallet', style: { color: '#fff', fontWeight: "bold", fontSize: px(24), } }}
-              />
-            }} component={Wallet} />
-            <Stack.Screen name="Expenses" component={p => <Expenses {...p} />} />
-          </Stack.Navigator> */}
-            <Tab.Navigator screenOptions={{
-              // tabBarIcon
-              // headerShown: false,
-            }}>
-              <Tab.Screen name="Wallet" component={Wallet} options={{
-                // icon
-              }} />
-              <Tab.Screen name="Expenses" options={{
-                headerShown: false,
-              }} component={ExpensesScreens} />
-            </Tab.Navigator>
+          <NavigationContainer ref={navigationRef}>
+            <FirebaseAuthProvider>
+              {(user) => {
+                return <Stack.Navigator screenOptions={{
+                  headerShown: false
+                }}>
+                  {user ?
+                    <Stack.Screen name='dashboard' component={DashboardScreens} /> : <Stack.Screen name='Login' component={Login} />}
+
+                </Stack.Navigator>
+              }}
+            </FirebaseAuthProvider>
           </NavigationContainer>
         </View>
       </FirebaseContextProvider>
+
       <StatusBar style="auto" />
-    </SafeAreaProvider>
+    </SafeAreaProvider >
   );
 }
 
