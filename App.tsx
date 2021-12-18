@@ -1,72 +1,68 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, Image, TextInput, Button, Alert, ToastAndroid, } from 'react-native';
-import * as Battery from 'expo-battery';
-import * as IntentLauncher from 'expo-intent-launcher';
+import { StyleSheet, View, Dimensions, ToastAndroid, } from 'react-native';
+import MapView, { Marker, Polyline, } from 'react-native-maps';
+import * as Location from 'expo-location';
 import { useEffectAsync } from './src/hooks/useEffectAsync';
-import { Icon } from 'react-native-elements'
-const batteryLevelMap = {
-  "0.25": "battery-quarter",
-  "0.50": "battery-half",
-  "0.75": "battery-three-quarters",
-  "1": "battery-full"
+function returnDelta() {
+  // const
 }
 export default function App() {
-  const [batteryLevel, setBatteryLevel] = useState<number>(0);
-
-  const [batteryState, setBatteryState] = useState<Battery.BatteryState>(null!);
-  const batteryIcon = useMemo(() => {
-    if (batteryLevel >= 0 && batteryLevel < 0.25) {
-      return "battery-1"
-    } else if (batteryLevel >= 0.25 && batteryLevel < 0.5) {
-      return "battery-2"
-    } else if (batteryLevel >= 0.5 && batteryLevel < 0.75) {
-      return "battery-3";
-    } else if (batteryLevel >= 0.75) {
-      return "battery-4"
-    }
-    return "battery-full";
-  }, [batteryLevel])
+  const [region, setRegion] = useState<MapView["props"]["region"]>({
+    latitude: 45.7489,
+    longitude: 21.2087,
+    latitudeDelta: 0.0943,
+    longitudeDelta: 0.0934,
+  });
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number,
+    longitude: number
+  }>(null!);
   useEffectAsync(async () => {
-    const batteryLevel = await Battery.getBatteryLevelAsync();
-    const batteryState = await Battery.getBatteryStateAsync();
-    setBatteryState(batteryState);
-    setBatteryLevel(batteryLevel);
-    const batteryStateSubscription = Battery.addBatteryStateListener(({ batteryState }) => {
-      setBatteryState(batteryState)
 
-    })
-    const batteryLevelSubscription = Battery.addBatteryLevelListener(({ batteryLevel }) => {
-      setBatteryLevel(batteryLevel);
-
-    })
-    return () => {
-      batteryStateSubscription && batteryStateSubscription.remove();
-      batteryLevelSubscription && batteryLevelSubscription.remove();
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      console.log("Not granted");
+      // setErrorMsg('Permission to access location was denied');
+      return;
     }
-  }, [])
+
+    let location = await Location.getCurrentPositionAsync({});
+    setUserLocation({
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude
+    })
+    console.log({ location })
+    // setLocation(location);
+  }, []);
   return (
     <View style={styles.container}>
-
-      <View style={styles.buttonGroup}>
-        <Text>
-          Battery level:
-          {batteryLevel}
-        </Text>
-        <Text>
-          Battery State:
-          {batteryState}
-        </Text>
-      </View>
-      <Icon type='font-awesome' tvParallaxProperties name={batteryIcon} color='#00aced' />
-      <View>
-        <Text>
-          {batteryState === Battery.BatteryState.CHARGING && "Charging"}
-          {batteryState === Battery.BatteryState.FULL && "Full"}
-          {batteryState === Battery.BatteryState.UNPLUGGED && "Unplugged"}
-          {batteryState === Battery.BatteryState.UNKNOWN && "Unknown"}
-        </Text>
-      </View>
+      <MapView
+        rotateEnabled={false}
+        loadingEnabled={true}
+        style={styles.map}
+        showsUserLocation={true}
+        region={region}
+        onRegionChange={(region) => {
+          // console.log({ region });
+        }}
+      >
+        <Polyline
+          coordinates={[{ latitude: 45.7499, longitude: 21.2287 },
+          { latitude: 45.7599, longitude: 21.2387 },
+          { latitude: 45.7409, longitude: 21.2487 }]}
+          strokeWidth={10}
+          strokeColor="#00a8ff"
+          lineDashPattern={[1]}
+        // lineCap="around"
+        />
+        <Marker onPress={() =>
+          ToastAndroid.show("Pressed on marker", ToastAndroid.SHORT)} coordinate={{ latitude: 45.7499, longitude: 21.2287 }} title="Timisoara" description="Test1" />
+        <Marker onPress={() =>
+          ToastAndroid.show("Pressed on marker", ToastAndroid.SHORT)} coordinate={{ latitude: 45.7599, longitude: 21.2387 }} title="Timisoara" description="Test2" />
+        <Marker onPress={() =>
+          ToastAndroid.show("Pressed on marker", ToastAndroid.SHORT)} coordinate={{ latitude: 45.7409, longitude: 21.2487 }} title="Timisoara" description="Test3" />
+      </MapView>
       <StatusBar style="auto" />
     </View>
   );
@@ -95,5 +91,9 @@ const styles = StyleSheet.create({
     margin: 12,
     borderWidth: 1,
     padding: 10
-  }
+  },
+  map: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+  },
 });
